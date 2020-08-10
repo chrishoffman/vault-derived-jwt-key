@@ -35,7 +35,7 @@ func main() {
 	signingKey := jose.SigningKey{Algorithm: jose.EdDSA, Key: opaqueSigner}
 	signer, err := jose.NewSigner(signingKey, nil)
 
-	_ = createJWTAuthMethod(client, vaultSigner.Public())
+	authMountPath, authRole := createJWTAuthMethod(client, vaultSigner.Public())
 
 	// build jwt
 	builder := jwt.Signed(signer)
@@ -45,7 +45,7 @@ func main() {
 		ID:       "id1",
 		Audience: jwt.Audience{"aud1", "aud2"},
 		IssuedAt: jwt.NewNumericDate(time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)),
-		Expiry:   jwt.NewNumericDate(time.Date(2017, 1, 1, 0, 15, 0, 0, time.UTC)),
+		Expiry:   jwt.NewNumericDate(time.Date(2021, 1, 1, 0, 15, 0, 0, time.UTC)),
 	}
 	builder = builder.Claims(pubClaims)
 
@@ -67,6 +67,16 @@ func main() {
 		log.Fatalf("error verifying jwt: %s\n", err)
 	}
 	log.Printf("claims: %+v\n", claims)
+
+	// generate a token with the auth method
+	auth, err := client.Logical().Write(path.Join("auth", authMountPath, "login"), map[string]interface{}{
+		"jwt":  rawJWT,
+		"role": authRole,
+	})
+	if err != nil {
+		log.Fatalf("err: %s", err)
+	}
+	log.Printf("token: %s", auth.Auth.ClientToken)
 }
 
 func createTransitMount(client *api.Client) (string, string) {
@@ -100,7 +110,7 @@ func createTransitMount(client *api.Client) (string, string) {
 	return mountPath, keyName
 }
 
-func createJWTAuthMethod(client *api.Client, publicKey crypto.PublicKey) string {
+func createJWTAuthMethod(client *api.Client, publicKey crypto.PublicKey) (string, string) {
 	// Create transit mount
 	mountPath, err := uuid.GenerateUUID()
 	if err != nil {
@@ -134,5 +144,22 @@ func createJWTAuthMethod(client *api.Client, publicKey crypto.PublicKey) string 
 		log.Fatalf("err: %s", err)
 	}
 
-	return mountPath
+	// Create jwt role
+	roleName, err := uuid.GenerateUUID()
+	if err != nil {
+		log.Fatalf("err: %s", err)
+	}
+	roleOptions := map[string]interface{}{
+		"role_type":       "jwt",
+		"user_claim":      "sub",
+		"bound_audiences": []string{"aud1"},
+		"token_policies":  []string{"msp", "hcp_vault"},
+	}
+	log.Printf("creating role: %s", roleName)
+	_, err = client.Logical().Write(path.Join("auth", mountPath, "role", roleName), roleOptions)
+	if err != nil {
+		log.Fatalf("err: %s", err)
+	}
+
+	return mountPath, roleName
 }
