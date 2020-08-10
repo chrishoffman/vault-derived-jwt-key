@@ -1,4 +1,4 @@
-package derivedjwt
+package main
 
 import (
 	"crypto"
