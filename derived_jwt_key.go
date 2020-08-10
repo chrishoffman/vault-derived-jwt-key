@@ -77,6 +77,15 @@ func main() {
 		log.Fatalf("err: %s", err)
 	}
 	log.Printf("token: %s", auth.Auth.ClientToken)
+
+	rsp, err := client.Logical().Write(path.Join("auth", "token", "lookup"), map[string]interface{}{
+		"token": auth.Auth.ClientToken,
+	})
+	if err != nil {
+		log.Fatalf("err: %s", err)
+	}
+	log.Printf("policies: %v", rsp.Data["policies"])
+
 }
 
 func createTransitMount(client *api.Client) (string, string) {
