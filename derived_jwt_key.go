@@ -85,7 +85,6 @@ func main() {
 		log.Fatalf("err: %s", err)
 	}
 	log.Printf("policies: %v", rsp.Data["policies"])
-
 }
 
 func createTransitMount(client *api.Client) (string, string) {
