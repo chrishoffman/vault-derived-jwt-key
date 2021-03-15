@@ -45,7 +45,7 @@ func main() {
 		ID:       "id1",
 		Audience: jwt.Audience{"aud1", "aud2"},
 		IssuedAt: jwt.NewNumericDate(time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)),
-		Expiry:   jwt.NewNumericDate(time.Date(2021, 1, 1, 0, 15, 0, 0, time.UTC)),
+		Expiry:   jwt.NewNumericDate(time.Date(2022, 1, 1, 0, 15, 0, 0, time.UTC)),
 	}
 	builder = builder.Claims(pubClaims)
 

@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"runtime"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/vault/api"
@@ -22,18 +21,18 @@ func prepareTestContainer() (func(), *api.Client) {
 
 	var tempDir string
 	// Docker for Mac does not play nice with TempDir
-	if runtime.GOOS == "darwin" {
-		uniqueTempDir, err := uuid.GenerateUUID()
-		if err != nil {
-			log.Fatalf("err: %s", err)
-		}
-		tempDir = path.Join("/tmp", uniqueTempDir)
-	} else {
-		tempDir, err = ioutil.TempDir("", "derived_jwt")
-		if err != nil {
-			log.Fatal(err)
-		}
+	// if runtime.GOOS == "darwin" {
+	// 	uniqueTempDir, err := uuid.GenerateUUID()
+	// 	if err != nil {
+	// 		log.Fatalf("err: %s", err)
+	// 	}
+	// 	tempDir = path.Join("/tmp", uniqueTempDir)
+	// } else {
+	tempDir, err = ioutil.TempDir("", "derived_jwt")
+	if err != nil {
+		log.Fatal(err)
 	}
+	// }
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -42,7 +41,7 @@ func prepareTestContainer() (func(), *api.Client) {
 
 	dockerOptions := &dockertest.RunOptions{
 		Repository: "hashicorp/vault-enterprise",
-		Tag:        "latest",
+		Tag:        "1.7.0-rc1_ent",
 		Cmd: []string{"server", "-log-level=trace", "-dev", "-dev-three-node", fmt.Sprintf("-dev-root-token-id=%s", testToken),
 			"-dev-listen-address=0.0.0.0:8200"},
 		Env:    []string{"VAULT_DEV_TEMP_DIR=/tmp"},
