@@ -144,7 +144,7 @@ func createJWTAuthMethod(client *api.Client, publicKey crypto.PublicKey) (string
 	log.Printf("pem public key: %s", pemPublicKey)
 
 	options := map[string]interface{}{
-		"jwt_supported_algs":     []string{"EdDSA"},
+		//"jwt_supported_algs":     []string{"RS256"},
 		"jwt_validation_pubkeys": []string{string(pemPublicKey)},
 	}
 	_, err = client.Logical().Write(path.Join("auth", mountPath, "config"), options)
