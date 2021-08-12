@@ -1,3 +1,5 @@
+## **This repository was a prototype and replaced by [chrishoffman/vault-signer](https://github.com/chrishoffman/vault-signer)**
+
 # vault-derived-jwt-key
 
 This is a POC for using derived ed25519 keys for signing and verifying JWTs using Vault.
